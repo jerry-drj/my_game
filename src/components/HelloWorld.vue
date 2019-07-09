@@ -44,9 +44,9 @@ export default {
 import Vue from 'vue'
 export default Vue.extend({
   props: {
-    msg:{
+    msg: {
       type: String,
-      default: "test1"
+      default: 'test1'
     }
   }
 })

@@ -18,24 +18,17 @@ export default {
 
 <template>
   <div>
-    <input v-model="msg">
-    <p>msg: {{ msg }}</p>
-    <p>computed msg: {{ computedMsg }}</p>
-    <button @click="greet">Greet</button>
-    <hello-world></hello-world>
+    <keep-alive>
+      <router-view ></router-view>
+    </keep-alive>
   </div>
 </template>
 
 <script lang="ts">
   import Vue from 'vue'
   import Component from 'vue-class-component'
-  import HelloWorld from './components/HelloWorld.vue'
 
-  @Component({
-    components: {
-      HelloWorld
-    }
-  })
+  @Component
   class App extends Vue {
     // 初始化数据
     msg = 123
@@ -59,7 +52,7 @@ export default {
 </script>
 
 
-<style>
+<style lang="less" scoped>
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
