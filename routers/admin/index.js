@@ -1,99 +1,115 @@
 const Router=require('koa-router');
 const path=require('path');
 const common=require('../../libs/common');
-const fs=require('fs');
-const xlsx = require('xlsx');
-// const fetch = require('../../api/fetch');
-
+const fs=require('await-fs');
+const axios = require('axios');
+const fetch = require('../../api/fetch')
+const xlsx = require('node-xlsx');
 let router=new Router();
 
-//
-router.post('/login', async ctx=>{
-  let {HTTP_ROOT} = ctx.config;
-  let field = ctx.request.fields;
-  let filePath = ctx.request.files[1].path;
-  let datas = [];
-  let writeFilleData = '';
-  console.log(filePath);
-  const workbook = xlsx.readFile(filePath);
-  const sheetNames = workbook.SheetNames;
-  for (const sheetName of sheetNames) {
-    const worksheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(worksheet);
-    datas.push(data);
-   }
-   datas[0].forEach((item,index) => {
-    writeFilleData += `"${item['字段名']}":"${item['英文']}"${index==datas[0].length-1?'':','}`
-   })
-   fs.writeFile('1.json','{'+writeFilleData+'}', 'utf-8',(err,data) => {
-    console.log(data)
-   })
-   console.log(writeFilleData)
-  // fs.readFile(filePath,'utf-8',(err,file) =>{
-  //   console.log(JSON.stringify(file))
-  // });
-  
+// 获取json读取文件与表格文件对比
 
-  ctx.redirect(`${HTTP_ROOT}`); 
-  // if (!field.username || !field.password) {
-  //   await ctx.render('admin/login', {
-  //     HTTP_ROOT,
-  //     errmsg: '账号或密码不正确'
+//
+router.get('/login', async ctx=>{
+  // await ctx.render('admin/login', {
+  //   HTTP_ROOT: ctx.config.HTTP_ROOT,
+  //   errmsg: ctx.query.errmsg
   // });
-  // } else {
-  //    await ctx.render('www/index',{
-  //     HTTP_ROOT,
-  //     banners: [],
-  //     catalogs: [],
-  //     articles: []
-  //   })
-  // }
   
-  // fetch({
-  //   method: ctx.method,
-  //   url: ctx.url,
-  //   data: {
-  //     name: 'name'
-  //   }
-  // }).then(data => {
-  //   // console.log(data)
-  // }).catch(err => {
-  //   // console.log('err',err)
-  // })
-  // console.log(ctx.request.fields)
-  // ctx.body = "index"
 });
 
-// router.post('/login', async ctx=>{
-//   const {HTTP_ROOT}=ctx.config;
+router.post('/login', async ctx=>{
+  const {HTTP_ROOT}=ctx.config;
 
-//   let {username, password}=ctx.request.fields;
-//   let admins=JSON.parse((await fs.readFile(
-//     path.resolve(__dirname, '../../admins.json')
-//   )).toString());
+  let {username, password}=ctx.request.fields;
+  // let admins=await fs.readFile(
+  //   username[0].path
+  // );
+  let userData = xlsx.parse(username[0].path)
+  let data = userData[0].data;
+  let writeData="module.exports = {\n"
+  let passwordData
+  if (password[0].size) { // 有上传JSON文件对文件进行对比，优先表格数据 start
+    let passwordData = require(password[0].path);
+    let passDataKeys = Object.keys(passwordData);
+    let dataKeys = data.map(dataItem => dataItem[0]);
+    let passDataFilter = passDataKeys.filter(item => {
+      return !dataKeys.includes(item)
+    })
+    // 优先表格数据
+    data.forEach(item => {
+      let key = item[0];
+      let value = item[9]
+      
+      if (value.replace) {
+        // 值是字符串
+        writeData+=key+":'"+ value.replace(/'/g,'"')+ "',\n"
+      } else {
+        // 值是非字符串
+        writeData+=key+':'+value+',\n'
+      }
+    })
+    
+    // 过滤完表格没有的字段，再将json的字段加入文件
+    passDataFilter.forEach(item => {
+      if (passwordData[item].replace) {
+        // 值是字符串
+        writeData+=item+":'"+ passwordData[item].replace(/'/g,'"')+ "',\n"
+      } else {
+        // 值是非字符串
+        writeData+=item+':'+passwordData[item]+',\n'
+      }
+    })
 
-//   function findAdmin(username){
-//     let a=null;
-//     admins.forEach(admin=>{
-//       if(admin.username==username)
-//         a=admin
-//     });
+    // 有上传JSON文件对文件进行对比，优先表格数据 end
+  } else { // 提取表格中客户提供的翻译，生成json文件start
 
-//     return a;
-//   }
+    data.forEach(item => {
+      let key = item[0];
+      let value = item[9]
+      
+      if (value.replace) {
+        // 值是字符串
+        writeData+=key+":'"+ value.replace(/'/g,'"')+ "',\n"
+      } else {
+        // 值是非字符串
+        writeData+=key+':'+value+',\n'
+      }
+    })
 
-//   let admin=findAdmin(username);
-//   if(!admin){
-//     //ctx.body='no this user';    //?
-//     ctx.redirect(`${HTTP_ROOT}/admin/login?errmsg=${encodeURIComponent('用户不存在')}`);
-//   }else if(admin.password!=common.md5(password+ctx.config.ADMIN_PREFIX)){
-//     ctx.redirect(`${HTTP_ROOT}/admin/login?errmsg=${encodeURIComponent('密码不对')}`);
-//   }else{
-//     //success
-//     ctx.session['admin']=username;
-//     ctx.redirect(`${HTTP_ROOT}/admin/`);
-//   }
-// });
+    // 提取表格中客户提供的翻译，生成json文件end
+  }
+  writeData+="}"
+
+  fs.writeFile(
+    'extract.js', writeData
+  );
+
+
+
+ ctx.redirect(`${HTTP_ROOT}?errmsg=${encodeURIComponent('用户不存在')}`);
+  // function findAdmin(username){
+  //   let a=null;
+  //   admins.forEach(admin=>{
+  //     if(admin.username==username)
+  //       a=admin
+  //   });
+
+  //   return a;
+  // }
+
+  // let admin=findAdmin(username);
+  // if(!admin){
+  //   //ctx.body='no this user';    //?
+  //   ctx.redirect(`${HTTP_ROOT}?errmsg=${encodeURIComponent('用户不存在')}`);
+  // }else if(admin.password!=common.md5(password+ctx.config.ADMIN_PREFIX)){
+  //   ctx.redirect(`${HTTP_ROOT}?errmsg=${encodeURIComponent('密码不对')}`);
+  // }else{
+  //   //success
+  //   ctx.session['admin']=username;
+  //   ctx.redirect(`${HTTP_ROOT}/admin/`);
+  // }
+});
 
 //
 // router.all('*', async (ctx, next)=>{
@@ -107,11 +123,11 @@ router.post('/login', async ctx=>{
 //   }
 // });
 
-// router.get('/', async ctx=>{
-//   const {HTTP_ROOT}=ctx.config;
+router.get('/', async ctx=>{
+  const {HTTP_ROOT}=ctx.config;
 
-//   ctx.redirect(`${HTTP_ROOT}/admin/banner`);
-// });
+  ctx.redirect(`${HTTP_ROOT}/admin/banner`);
+});
 
 //------------------------------------------------------------------------------
 router.use('/banner', require('./banner'));

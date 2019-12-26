@@ -7,14 +7,13 @@ const session = require('koa-session');
 const fs = require('fs');
 const ejs = require('koa-ejs');
 const config = require('./config');
-const Pug = require('koa-pug')
+
 let server = new Koa();
 server.listen(process.env.PORT || config.PORT);
 console.log(`server running at ${process.env.PORT || config.PORT}`);
 
 //中间件
 server.use(body({
-    multipart: true,
     uploadDir: config.UPLOAD_DIR
 }));
 
@@ -25,7 +24,7 @@ server.use(session({
 }, server));
 
 //数据库
-// server.context.db = require('./libs/database');
+server.context.db = require('./libs/database');
 server.context.config = config;
 
 //渲染
@@ -37,23 +36,24 @@ ejs(server, {
   debug: false
 });
 
-server.use(async(ctx, next) => {
-    let { HTTP_ROOT } = ctx.config;
-    try {
-      await next();
-        // console.log('body', ctx.body)
-        // if (!ctx.body) {
-        //     await ctx.render('www/404', {
-        //       HTTP_ROOT
-        //     });
-        // }
-    } catch (e) {
-        console.log('err', e)
-            // await ctx.render('www/404', {
-            //   HTTP_ROOT
-            // });
-    }
-});
+// server.use(async(ctx, next) => {
+//     let { HTTP_ROOT } = ctx.config;
+//     try {
+//         await next();
+//         console.log('body', ctx.body)
+//         if (!ctx.body) {
+//             // await ctx.render('www/404', {
+//             //   HTTP_ROOT
+//             // });
+//         }
+//     } catch (e) {
+//       await next();
+//         console.log('err', e)
+//             // await ctx.render('www/404', {
+//             //   HTTP_ROOT
+//             // });
+//     }
+// });
 
 //路由和static
 let router = new Router();

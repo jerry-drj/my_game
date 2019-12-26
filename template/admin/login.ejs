@@ -4,29 +4,37 @@
     <meta charset="utf-8">
     <title></title>
     <link rel="stylesheet" href="<%=HTTP_ROOT%>/css/bootstrap.css">
+    <style>
+      p {
+        font-size:12px;
+        color: #ccc;
+      }
+    </style>
   </head>
   <body>
     <div class="panel panel-default" style="width:350px; margin:100px auto 0">
       <div class="panel-heading">
-        <h2 class="panel-title">文件对比</h2>
+        <h2 class="panel-title">文件比对</h2>
       </div>
       <div class="panel-body">
-        <!-- <% if(errmsg){ %>
+        <% if(errmsg){ %>
         <div class="alert alert-danger alert-dismissible" role="alert">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <strong>错误</strong> <%=errmsg%>
         </div>
-        <% } %> -->
-        <form action="<%=HTTP_ROOT%>/admin/login" enctype="multipart/form-data" method="post">
+        <% } %>
+        <form action="<%=HTTP_ROOT%>/admin/login" method="post" enctype="multipart/form-data">
           <div class="form-group">
-            <label for="username">BASE FILE</label>
-            <input type="file" class="form-control" name="BaseFile" id="username">
+            <label for="username">提交表格</label>
+            <p>不提交js提取表格内容生成js文件</p>
+            <input type="file" class="form-control" name="username" id="username">
           </div>
           <div class="form-group">
-            <label for="username">比对文件</label>
-            <input type="file" class="form-control" name="ComparedFile" id="password">
+            <label for="username">提交js</label>
+            <p>表格内容用于补充js文件(非必传)</p>
+            <input type="file"  class="form-control" name="password" id="password">
           </div>
-          <button type="submit" class="btn btn-primary">进行比对</button>
+          <button type="submit" class="btn btn-primary">提交文件</button>
         </form>
       </div>
     </div>

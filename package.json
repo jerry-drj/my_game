@@ -5,7 +5,8 @@
     "main": "server.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node server.js"
+        "start": "node server.js",
+        "dev": "nodemon server.js"
     },
     "keywords": [],
     "author": "",
@@ -21,12 +22,9 @@
         "koa-session": "^5.12.3",
         "koa-static": "^5.0.0",
         "mysql": "^2.17.1",
-        "xlsx": "^0.15.1"
+        "node-xlsx": "^0.15.0"
     },
-    "devDependencies": {
-        "koa-pug": "^4.0.2",
-        "pug": "^2.0.4"
-    },
+    "devDependencies": {},
     "engines": {
         "node": "10.16.3"
     }

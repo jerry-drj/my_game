@@ -3,13 +3,16 @@ const Router = require('koa-router');
 let router = new Router();
 
 router.get('', async ctx => {
+    // ctx.body = "index"
     let { HTTP_ROOT } = ctx.config;
     await ctx.render('admin/login', {
-        HTTP_ROOT,
-        errmsg: false
-    });
-        // ctx.body = "index"
-    })
+    HTTP_ROOT,
+    errmsg: false,
+    banners: [],
+    catalogs:[],
+    articles: []
+  });
+})
     // router.get('', async ctx => {
     //     let { HTTP_ROOT } = ctx.config;
     //     console.log(ctx)
